@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block body %}
+
+<form action="/test" method="post" enctype="multipart/form-data">
+  <table>
+    <tr>
+      <td>choose a file</td>
+      <td><input type="file" name="upload" value="browse" /></td>
+    </tr>
+    <tr>
+      <td>description</td>
+      <td><input type="text" name="description" /></td>
+    </tr>
+    <tr>
+      <td><input type="submit" value="upload" /></td>
+    </tr>
+  </table>
+</form>
+
+{% if error %}
+  <div id="error" class="result">error</div>
+{% endif %}
+
+{% if success %}
+  <div id="success" class="result">success</div>
+{% endif %}
+
+<ul>
+  <li>all</li>
+  {% for cat in category %}
+    <li>{{ cat }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

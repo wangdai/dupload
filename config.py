@@ -12,3 +12,9 @@ CATEGORY = {
     'music': ('.mp3',),
     'code' : ('.c', '.cpp', '.h', '.java', '.py')
 }
+
+URL = {
+    'index': '/'
+}
+
+BAD_REQUEST = '400'

@@ -4,27 +4,32 @@ from config import *
 import os
 import hashlib
 
-#@route('/<name>')
-#def index(name):
-#    return template('index.tpl', name=name);
+@get('/test')
+def index():
+    abort(400, "File extension not allowed")
 
-@get('/')
+@get(URL['index'])
 def upload():
-    return template('upload.tpl');
+    return template('index', category=CATEGORY.keys());
 
-@post('/')
+@post(URL['index'])
 def do_upload():
     session = Session()
     try:
         upload = request.files.get('upload')
+        description = request.forms.get('description')
+        if description is '':
+            description = None
 
         # guess the file type
         name, ext = os.path.splitext(upload.filename)
+        in_cat = False
         for cat in CATEGORY:
             if ext in CATEGORY.get(cat):
+                in_cat = True
                 break
-        if cat is None:
-            return template(BAD_REQUEST, "File extension '%s' not allowed" % ext)
+        if not in_cat:
+            abort(400, "File extension '%s' not allowed" % ext)
 
         # get the hash value for the first HASH_SIZE bytes
         # and judge if same file exists
@@ -39,6 +44,7 @@ def do_upload():
         item.hash_value = md5_value
         item.hash_name = md5_value[8:24] + ext
         item.origin_name = upload.filename
+        item.description = description
 
         session.add(item)
         session.commit()
