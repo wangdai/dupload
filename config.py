@@ -8,9 +8,9 @@ FILE_ROOT = STATIC_PATH + '/dupload'
 
 CATEGORY = {
     'img'  : ('.jpg', '.png', '.gif'),
-    'doc'  : ('.txt', '.pdf', '.doc', 'docx'),
+    'doc'  : ('.txt', '.pdf', '.doc', '.docx', '.xml', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.tsv'),
     'music': ('.mp3',),
-    'code' : ('.c', '.cpp', '.h', '.java', '.py')
+    'pack' : ('.zip', '.gz', '.bz2', '.tar', '.7z', '.md')
 }
 
 PAGE_SIZE = 10

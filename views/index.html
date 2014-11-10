@@ -18,36 +18,68 @@
     <tr>
       <td><input type="submit" value="upload" /></td>
       <td>
-        {% if error %}
-          <div id="error" class="result">{{ error }}</div>
-        {% endif %}
-        {% if success %}
-          <div id="success" class="result">{{ success }}</div>
-        {% endif %}
+        <div id="error" class="result">
+          {% if error %}
+            {{ error }}
+          {% endif %}
+        </div>
+        <div id="success" class="result">
+          {% if success %}
+            {{ success }}
+          {% endif %}
+        </div>
       </td>
     </tr>
   </table>
 </form>
 
 <ul class="navi">
-  <a href="/cat"><li>all</li></a>
+  <a class="cat" interface="all"><li>all</li></a>
   {% for cat in category %}
-    <a href="/cat/{{ cat }}"><li>{{ cat }}</li></a>
+    <a class="cat" interface="{{ cat }}"><li>{{ cat }}</li></a>
   {% endfor %}
 </ul>
 
 <table id="items">
-  <tr>
-    <th>name</th>
-    <th>upload date</th>
-    <th>description</th>
-    <th>operation</th>
-  </tr>
-  <tr>
-    <td>123.jpg</td>
-    <td>2014-09-01</td>
-    <td></td>
-    <td>quote delete</td>
-  </tr>
+  <thead>
+    <tr>
+      <th>name</th>
+      <th>file size</th>
+      <th>upload date</th>
+      <th>description</th>
+      <th>operation</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
 </table>
+
+<script src="http://libs.useso.com/js/jquery/1.11.1/jquery.min.js"></script>
+<script>
+$(".cat").click(function() {
+    var cat = $(this).attr("interface");
+    console.log(cat);
+    if ($("#items").attr("class") != cat) {
+        $("#items").attr("class", "cat");
+        $.get(url="cat/"+cat, callback=function(data, status) {
+            if (status != "success") {
+                $("#error").text(status);
+                return;
+            }
+            $("#items tbody tr").remove();
+            for (var i = 0; i < data.length; i++) {
+                var row = data[i];
+                var line = "<tr>";
+                line += ("<td>" + row.origin_name + "</td>");
+                line += ("<td>" + row.file_size + "</td>");
+                line += ("<td>" + row.upload_time + "</td>");
+                line += ("<td>" + row.description + "</td>");
+                line += ("<td>" + row.hash_value + "</td>");
+                line += ("</tr>");
+                $("#items tbody").append(line);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
