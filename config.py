@@ -1,10 +1,10 @@
-HASH_SIZE = 8192
+HASH_SIZE = 4096
 
 DB_NAME = 'dupload.db'
 
-WWW_PATH = '/home/wangdai/www'
+STATIC_PATH = '/home/wangdai/static'
 
-STATIC_PATH = WWW_PATH + '/static'
+FILE_ROOT = STATIC_PATH + '/dupload'
 
 CATEGORY = {
     'img'  : ('.jpg', '.png', '.gif'),
@@ -13,8 +13,4 @@ CATEGORY = {
     'code' : ('.c', '.cpp', '.h', '.java', '.py')
 }
 
-URL = {
-    'index': '/'
-}
-
-BAD_REQUEST = '400'
+PAGE_SIZE = 10

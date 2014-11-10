@@ -1,12 +1,40 @@
+<!DOCTYPE html>
 <html>
   <head>
     {% block head %}
     <title>{% block title %}{% endblock %} - dupload</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     {% endblock %}
     <style>
-      td {
+      table, td, th {
         border: 1px solid #DDD;
-        padding: 5px;
+      }
+
+      td, th {
+        padding: 8px 4px;
+      }
+
+      #upinfo {
+        width: 480px;
+      }
+
+      form {
+        margin: 0;
+      }
+
+      input[name="description"] {
+        width: 100%;
+      }
+
+      .navi {
+        padding: 0;
+        margin: 8px 0;
+      }
+
+      .navi li {
+        list-style: none;
+        display: inline;
+        padding: 8px 32px;
       }
     </style>
   </head>

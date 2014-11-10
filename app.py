@@ -1,19 +1,35 @@
 from bottle import *
 from bottle import jinja2_template as template
+from sqlalchemy import desc
 from config import *
+from models import *
 import os
 import hashlib
+import json
 
 @get('/test')
-def index():
-    abort(400, "File extension not allowed")
+@get('/test/<id>')
+def test(id=0):
+    id = int(id)
+    abort(400, "%d" % id)
 
-@get(URL['index'])
-def upload():
+@get("/")
+def index():
     return template('index', category=CATEGORY.keys());
 
-@post(URL['index'])
-def do_upload():
+@get("/items")
+@get("/items/<p>")
+def items(p=0):
+    p = int(p)
+    p_start = p * PAGE_SIZE
+    p_stop = (p + 1) * PAGE_SIZE
+    session = Session()
+    items = session.query(Item).order_by(desc(Item.upload_time))[p_start:p_stop]
+    session.close()
+    return json.dumps(items)
+
+@post("/")
+def upload():
     session = Session()
     try:
         upload = request.files.get('upload')
@@ -37,7 +53,7 @@ def do_upload():
         md5_value = hashlib.md5(file_bytes).hexdigest()
         same_item = session.query(Item).filter_by(hash_value=md5_value).first()
         if same_item is not None:
-            return template("Your file '%s' already exists" % upload.filename, same_item.hash_name)
+            return template('index', error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name), category=CATEGORY.keys())
 
         item = Item()
         item.category = cat
@@ -46,12 +62,18 @@ def do_upload():
         item.origin_name = upload.filename
         item.description = description
 
+        save_path = '%s/%s' % (FILE_ROOT, cat)
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+        upload.filename = item.hash_name
+        upload.file.seek(0)
+        upload.save(save_path)
+        item.file_size = os.path.getsize('%s/%s' % (save_path, item.hash_name))
+
         session.add(item)
         session.commit()
 
-        save_path = '%s/%s' % (STATIC_PATH, cat)
-        upload.save(save_path)
-        return 'OK'
+        return template('index', success="'%s' uploading succeeds" % item.origin_name, category=CATEGORY.keys())
     except:
         session.rollback()
         raise

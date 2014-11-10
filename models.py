@@ -13,6 +13,7 @@ class Item(Base):
     hash_value = Column(String, primary_key=True)
     origin_name = Column(String)
     hash_name = Column(String)
+    file_size = Column(Integer)
     category = Column(String)
     description = Column(String)
     upload_time = Column(TIMESTAMP)
