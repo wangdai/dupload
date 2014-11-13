@@ -47,14 +47,17 @@
       <th>file size</th>
       <th>upload date</th>
       <th>description</th>
-      <th>operation</th>
     </tr>
   </thead>
   <tbody>
   </tbody>
 </table>
 
-<script src="http://libs.useso.com/js/jquery/1.11.1/jquery.min.js"></script>
+<ul class="pagination">
+
+</ul>
+
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script>
 $(".cat").click(function() {
     var cat = $(this).attr("interface");
@@ -69,17 +72,19 @@ $(".cat").click(function() {
             $("#items tbody tr").remove();
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
-                var line = "<tr>";
-                line += ("<td>" + row.origin_name + "</td>");
-                line += ("<td>" + row.file_size + "</td>");
-                line += ("<td>" + row.upload_time + "</td>");
-                line += ("<td>" + row.description + "</td>");
-                line += ("<td>" + row.hash_value + "</td>");
+                var line = "<tr id=\"" + row.hash_value + "\">";
+                line += ("<td class=\"file-name\"><a href=\"static/dupload/" +
+                        row.category + "/" + row.hash_name + "\">" +
+                        row.origin_name + "</a></td>");
+                line += ("<td class=\"file-size\">" + row.file_size + "</td>");
+                line += ("<td class=\"upload-time\">" + row.upload_time + "</td>");
+                line += ("<td class=\"description\">" + row.description + "</td>");
                 line += ("</tr>");
                 $("#items tbody").append(line);
             }
         });
     }
 });
+$(".cat[interface='all']").click();
 </script>
 {% endblock %}

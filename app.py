@@ -15,6 +15,10 @@ def test(category):
         print('no')
         print(category.encode())
 
+@get('/static/<path:path>')
+def static(path):
+    return static_file(path, root=STATIC_PATH)
+
 @get('/')
 def index():
     return template('index', category=CATEGORY.keys());
@@ -27,11 +31,13 @@ def upload():
         if upload is None:
             abort(400, "Sorry, you didn't pick a file")
         description = request.forms.get('description')
-        if description == '':
-            description = None
+        if description is None:
+            description = ''
 
         # guess the file type
         name, ext = os.path.splitext(upload.filename)
+        if ext in ('.gz', '.bz2'):
+            ext = os.path.splitext(name)[1] + ext
         in_cat = False
         for cat in CATEGORY:
             if ext in CATEGORY.get(cat):
@@ -46,7 +52,9 @@ def upload():
         md5_value = hashlib.md5(file_bytes).hexdigest()
         same_item = session.query(Item).filter_by(hash_value=md5_value).first()
         if same_item is not None:
-            return template('index', error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name), category=CATEGORY.keys())
+            return template('index',
+                    error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name),
+                    category=CATEGORY.keys())
 
         item = Item()
         item.category = cat
@@ -66,7 +74,9 @@ def upload():
         session.add(item)
         session.commit()
 
-        return template('index', success="'%s' uploading succeeds" % item.origin_name, category=CATEGORY.keys())
+        return template('index',
+                success="'%s' uploading succeeds" % item.origin_name,
+                category=CATEGORY.keys())
     except:
         session.rollback()
         raise
@@ -95,7 +105,11 @@ def items_info(category, p=0):
 def delete_item(h):
     session = Session()
     try:
-        a = 1
+        item = session.query(Item).filter_by(hash_value=h).first()
+        item_path = '%s/%s/%s' % (FILE_ROOT, item.category, item.hash_name)
+        os.remove(item_path)
+        session.delete(item)
+        session.commit()
     except:
         session.rollback()
         raise
