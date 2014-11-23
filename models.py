@@ -1,12 +1,17 @@
+from datetime import *
+import json
+import os
+
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import *
 from sqlalchemy.ext.declarative import declarative_base
+
 from config import *
-from datetime import *
-import json
+
 
 Base = declarative_base()
+
 
 class Item(Base):
     __tablename__ = 'item'
@@ -22,9 +27,28 @@ class Item(Base):
     def __init__(self):
         self.upload_time = datetime.today()
 
+    def make_item(self, filename, file, description):
+        if description is None:
+            self.description = ''
+        else:
+            self.description = description
+        fname, ext = os.path.splitext(filename)
+        if ext in ('.gz', '.bz2'):
+            ext = os.path.splitext(fname)[1] + ext
+        cat = guess_cat(ext)
+
+
+def guess_cat(extension):
+    for cat in CATEGORY:
+        if extension in CATEGORY.get(cat):
+            return cat
+    raise Exception()
+
+
 engine = create_engine('sqlite:///%s' % DB_NAME, echo=True)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
+
 
 class ItemEncoder(json.JSONEncoder):
     def default(self, obj):

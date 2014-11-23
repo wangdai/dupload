@@ -1,13 +1,12 @@
+import hashlib
+
 from bottle import *
 from bottle import jinja2_template as template
-from sqlalchemy import desc
-from config import *
-from models import *
-import os
-import hashlib
-import json
 
-@get('/test/<category>')
+from models import *
+
+
+@route('/test/<category>', method='GET')
 def test(category):
     if category is 'all':
         print('yes')
@@ -15,21 +14,24 @@ def test(category):
         print('no')
         print(category.encode())
 
-@get('/static/<path:path>')
+
+@route('/static/<path:path>', method='GET')
 def static(path):
     return static_file(path, root=STATIC_PATH)
 
-@get('/')
-def index():
-    return template('index', category=CATEGORY.keys());
 
-@post('/')
-def upload():
+@route('/', method='GET')
+def index():
+    return template('index', category=CATEGORY.keys())
+
+
+@route('/', method='POST')
+def do_upload():
     session = Session()
     try:
         upload = request.files.get('upload')
         if upload is None:
-            abort(400, "Sorry, you didn't pick a file")
+            abort(400, 'cannot get the upload file')
         description = request.forms.get('description')
         if description is None:
             description = ''
@@ -53,8 +55,8 @@ def upload():
         same_item = session.query(Item).filter_by(hash_value=md5_value).first()
         if same_item is not None:
             return template('index',
-                    error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name),
-                    category=CATEGORY.keys())
+                            error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name),
+                            category=CATEGORY.keys())
 
         item = Item()
         item.category = cat
@@ -75,16 +77,17 @@ def upload():
         session.commit()
 
         return template('index',
-                success="'%s' uploading succeeds" % item.origin_name,
-                category=CATEGORY.keys())
+                        success="'%s' uploading succeeds" % item.origin_name,
+                        category=CATEGORY.keys())
     except:
         session.rollback()
         raise
     finally:
         session.close()
 
-@get('/cat/<category>')
-@get('/cat/<category>/<p>')
+
+@route('/cat/<category>', method='GET')
+@route('/cat/<category>/<p>', method='GET')
 def items_info(category, p=0):
     category = str(category)
     if category not in CATEGORY.keys() and category != 'all':
@@ -101,7 +104,8 @@ def items_info(category, p=0):
     response.set_header('Content-Type', 'application/json')
     return json.dumps(items, cls=ItemEncoder)
 
-@route('/item/<h>', method="DELETE")
+
+@route('/item/<h>', method='DELETE')
 def delete_item(h):
     session = Session()
     try:
@@ -116,7 +120,7 @@ def delete_item(h):
     finally:
         session.close()
 
-#run(server='gunicorn', host='localhost', port=8000)
+# run(server='gunicorn', host='localhost', port=8000)
 if __name__ == '__main__':
     run(host='localhost', port=8000, debug=True)
 
