@@ -3,6 +3,7 @@ import hashlib
 from bottle import *
 from bottle import jinja2_template as template
 
+import config
 from models import *
 
 
@@ -19,13 +20,16 @@ def test(category):
 def static(path):
     return static_file(path, root=STATIC_PATH)
 
-
-@route('/', method='GET')
+@route('/items', method='GET')
 def index():
-    return template('index', category=CATEGORY.keys())
+    cat = request.query.cat
+    p = request.query.p or 1
+    offset = (p - 1) * config.PAGE_SIZE
+    # q = request.query.q
+    # return template('index', category=CATEGORY.keys())
+    return service.get_items(session, offset, config.PAGE_SIZE, cat)
 
-
-@route('/', method='POST')
+@route('/items', method='POST')
 def do_upload():
     session = Session()
     try:

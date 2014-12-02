@@ -1,13 +1,12 @@
-from datetime import *
 import json
 import os
 
-from sqlalchemy import *
+from sqlalchemy import Column, func, create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.types import *
+from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-from config import *
+import config
 
 
 Base = declarative_base()
@@ -16,52 +15,35 @@ Base = declarative_base()
 class Item(Base):
     __tablename__ = 'item'
 
-    hash_value = Column(String, primary_key=True)
-    origin_name = Column(String)
-    hash_name = Column(String)
-    file_size = Column(Integer)
-    category = Column(String)
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    hashname = Column(String, unique=True)
+    size = Column(Integer)
+    cat = Column(String)
     description = Column(String)
-    upload_time = Column(TIMESTAMP)
-
-    def __init__(self):
-        self.upload_time = datetime.today()
-
-    def make_item(self, filename, file, description):
-        if description is None:
-            self.description = ''
-        else:
-            self.description = description
-        fname, ext = os.path.splitext(filename)
-        if ext in ('.gz', '.bz2'):
-            ext = os.path.splitext(fname)[1] + ext
-        cat = guess_cat(ext)
-
-
-def guess_cat(extension):
-    for cat in CATEGORY:
-        if extension in CATEGORY.get(cat):
-            return cat
-    raise Exception()
-
-
-engine = create_engine('sqlite:///%s' % DB_NAME, echo=True)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+    created = Column(DateTime, default=func.now())
+    lastmodified = Column(DateTime, 
+            default=func.now(), onupdate=func.now())
 
 
 class ItemEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Item):
             return {
-                'hash_value': obj.hash_value,
-                'origin_name': obj.origin_name,
-                'hash_name': obj.hash_name,
-                'file_size': obj.file_size,
-                'category': obj.category,
+                'id': obj.id,
+                'name': obj.name,
+                'hashname': obj.hashname,
+                'size': obj.size,
+                'cat': obj.cat,
                 'description': obj.description,
-                'upload_time': obj.upload_time
+                'created': obj.created,
+                'lastmodified': obj.lastmodified
             }
         if isinstance(obj, datetime):
-            return str(obj)[0:19]
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
         return json.JSONEncoder.default(self, obj)
+        
+engine = create_engine('sqlite:///%s' % config.DB_NAME, echo=config.DEBUG)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+
