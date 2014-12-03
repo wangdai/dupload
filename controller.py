@@ -1,11 +1,15 @@
 import hashlib
+import json
 
-from bottle import *
+from bottle import route, redirect, request
 from bottle import jinja2_template as template
+from sqlalchemy.orm import sessionmaker
 
 import config
-from models import *
+import service
+from models import engine
 
+Session = sessionmaker(bind=engine)
 
 @route('/test/<category>', method='GET')
 def test(category):
@@ -20,69 +24,52 @@ def test(category):
 def static(path):
     return static_file(path, root=STATIC_PATH)
 
-@route('/items', method='GET')
+@route('/', method='GET')
 def index():
-    cat = request.query.cat
+    redirect('/items')
+
+@route('/items', method='GET')
+def get_items():
+    session = Session()
+    # current page
     p = request.query.p or 1
     offset = (p - 1) * config.PAGE_SIZE
+    # category
+    cat = request.query.cat
+    cat = None if cat not in config.CAT_KEYS else cat
+    rows = service.get_items_count(session, cat)
+    # total pages
+    tp = rows // config.PAGE_SIZE
+    if rows % config.PAGE_SIZE != 0:
+        tp += 1
     # q = request.query.q
-    # return template('index', category=CATEGORY.keys())
-    return service.get_items(session, offset, config.PAGE_SIZE, cat)
+    param = dict()
+    param['p'] = p
+    param['tab'] = cat
+    param['cats'] = sorted(config.CAT_KEYS)
+    param['r'] = rows
+    param['tp'] = tp
+    param['items'] = service.get_items(session, offset, config.PAGE_SIZE, cat)
+    session.close()
+    return template('index', param)
 
 @route('/items', method='POST')
-def do_upload():
+def create_item():
     session = Session()
     try:
         upload = request.files.get('upload')
-        if upload is None:
-            abort(400, 'cannot get the upload file')
-        description = request.forms.get('description')
-        if description is None:
-            description = ''
+        desc = request.forms.get('description')
+        desc = None if not desc else desc
 
-        # guess the file type
-        name, ext = os.path.splitext(upload.filename)
-        if ext in ('.gz', '.bz2'):
-            ext = os.path.splitext(name)[1] + ext
-        in_cat = False
-        for cat in CATEGORY:
-            if ext in CATEGORY.get(cat):
-                in_cat = True
-                break
-        if not in_cat:
-            abort(400, "File extension '%s' not allowed. Allowed: %s" % (ext, CATEGORY))
+        item = service.create_item(session, upload.file, upload.rawfilename, desc)
 
-        # get the hash value for the first HASH_SIZE bytes
-        # and judge if same file exists
-        file_bytes = upload.file.read(HASH_SIZE)
-        md5_value = hashlib.md5(file_bytes).hexdigest()
-        same_item = session.query(Item).filter_by(hash_value=md5_value).first()
-        if same_item is not None:
-            return template('index',
-                            error="'%s' already exists => '%s'" % (upload.filename, same_item.origin_name),
-                            category=CATEGORY.keys())
+        savepath = '%s/%s' % (config.FILE_ROOT, item.cat)
+        if not os.path.exists(savepath):
+            os.mkdir(savepath)
+        upload.filename = item.hashname
+        upload.save(savepath)
 
-        item = Item()
-        item.category = cat
-        item.hash_value = md5_value
-        item.hash_name = md5_value[8:24] + ext
-        item.origin_name = upload.filename
-        item.description = description
-
-        save_path = '%s/%s' % (FILE_ROOT, cat)
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-        upload.filename = item.hash_name
-        upload.file.seek(0)
-        upload.save(save_path)
-        item.file_size = os.path.getsize('%s/%s' % (save_path, item.hash_name))
-
-        session.add(item)
-        session.commit()
-
-        return template('index',
-                        success="'%s' uploading succeeds" % item.origin_name,
-                        category=CATEGORY.keys())
+        return item.id
     except:
         session.rollback()
         raise
@@ -90,32 +77,14 @@ def do_upload():
         session.close()
 
 
-@route('/cat/<category>', method='GET')
-@route('/cat/<category>/<p>', method='GET')
-def items_info(category, p=0):
-    category = str(category)
-    if category not in CATEGORY.keys() and category != 'all':
-        abort(400, "Category '%s' doesn't exist" % category)
-    p = int(p)
-    p_start = p * PAGE_SIZE
-    p_stop = (p + 1) * PAGE_SIZE
-    session = Session()
-    if category == 'all':
-        items = session.query(Item).order_by(desc(Item.upload_time))[p_start:p_stop]
-    else:
-        items = session.query(Item).filter_by(category=category).order_by(desc(Item.upload_time))[p_start:p_stop]
-    session.close()
-    response.set_header('Content-Type', 'application/json')
-    return json.dumps(items, cls=ItemEncoder)
-
-
-@route('/item/<h>', method='DELETE')
-def delete_item(h):
+@route('/items/<id>', method='DELETE')
+def delete_item(id):
     session = Session()
     try:
-        item = session.query(Item).filter_by(hash_value=h).first()
-        item_path = '%s/%s/%s' % (FILE_ROOT, item.category, item.hash_name)
-        os.remove(item_path)
+        id = int(id)
+        item = session.query(Item).filter_by(id=id).first()
+        path = '%s/%s/%s' % (FILE_ROOT, item.cat, item.hashname)
+        os.remove(path)
         session.delete(item)
         session.commit()
     except:
@@ -124,8 +93,3 @@ def delete_item(h):
     finally:
         session.close()
 
-# run(server='gunicorn', host='localhost', port=8000)
-if __name__ == '__main__':
-    run(host='localhost', port=8000, debug=True)
-
-app = default_app()

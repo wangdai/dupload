@@ -5,40 +5,22 @@
 {% endblock %}
 {% block body %}
 
+<h2>dupload</h2>
+
 <form action="/" method="post" enctype="multipart/form-data">
-  <table id="upinfo">
-    <tr>
-      <td>choose a file</td>
-      <td><input type="file" name="upload" value="browse" /></td>
-    </tr>
-    <tr>
-      <td>description</td>
-      <td><input type="text" name="description" /></td>
-    </tr>
-    <tr>
-      <td><input type="submit" value="upload" /></td>
-      <td>
-        <div id="error" class="result">
-          {% if error %}
-            {{ error }}
-          {% endif %}
-        </div>
-        <div id="success" class="result">
-          {% if success %}
-            {{ success }}
-          {% endif %}
-        </div>
-      </td>
-    </tr>
-  </table>
+  <input type="file" name="upload" value="browse" />
+  <input type="text" name="description" />
+  <input type="submit" value="upload" />
 </form>
 
-<ul class="navi">
-  <a class="cat" interface="all"><li>all</li></a>
-  {% for cat in category %}
-    <a class="cat" interface="{{ cat }}"><li>{{ cat }}</li></a>
+<h3>items</h3>
+
+<select>
+  <option>all</option>
+  {% for cat in cats %}
+    <option {% if cat == tab %}selected{% endif %}>{{ cat }}</option>
   {% endfor %}
-</ul>
+</select>
 
 <table id="items">
   <thead>
