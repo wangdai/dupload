@@ -33,13 +33,12 @@ def create_item(session, file, name, desc):
     file.seek(0)
     size = len(fb_arr)
     hashvalue = hashlib.md5(fb_arr).hexdigest()
-    if exists(hashvalue):
+    if exists(session, hashvalue):
         # TODO
         pass
     hashname = hashvalue + ext
     item = Item(name, hashname, size, cat, desc)
     session.add(item)
-    session.commit()
     return item
 
 def exists(session, hashvalue):

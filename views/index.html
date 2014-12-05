@@ -7,7 +7,7 @@
 
 <h2>dupload</h2>
 
-<form action="/" method="post" enctype="multipart/form-data">
+<form id="uform" method="post" action="/items" enctype="multipart/form-data">
   <input type="file" name="upload" value="browse" />
   <input type="text" name="description" />
   <input type="submit" value="upload" />
@@ -41,32 +41,27 @@
 
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script>
-$(".cat").click(function() {
-    var cat = $(this).attr("interface");
-    console.log(cat);
-    if ($("#items").attr("class") != cat) {
-        $("#items").attr("class", "cat");
-        $.get(url="cat/"+cat, callback=function(data, status) {
-            if (status != "success") {
-                $("#error").text(status);
-                return;
-            }
-            $("#items tbody tr").remove();
-            for (var i = 0; i < data.length; i++) {
-                var row = data[i];
-                var line = "<tr id=\"" + row.hash_value + "\">";
-                line += ("<td class=\"file-name\"><a href=\"static/dupload/" +
-                        row.category + "/" + row.hash_name + "\">" +
-                        row.origin_name + "</a></td>");
-                line += ("<td class=\"file-size\">" + row.file_size + "</td>");
-                line += ("<td class=\"upload-time\">" + row.upload_time + "</td>");
-                line += ("<td class=\"description\">" + row.description + "</td>");
-                line += ("</tr>");
-                $("#items tbody").append(line);
-            }
-        });
+/*
+var xhr = new XMLHttpRequest();
+xhr.onprogress = function(p) {
+    console.log("onprogress", p.loaded);
+}
+$("#uform").submit(function(e) {
+    e.preventDefault();
+    var fileList = $(this).children("[name='upload']")[0].files;
+    if (fileList.length <= 0) {
+        return;
     }
+    
+    if (file.size > 8192) {
+        alert("file too large: " + file.size);
+        return;
+    }
+    
+    var formData = new FormData($(this)[0]);
+    xhr.open("POST", "/items");
+    xhr.send(formData);
 });
-$(".cat[interface='all']").click();
+*/
 </script>
 {% endblock %}

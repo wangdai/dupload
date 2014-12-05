@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 
 from bottle import route, redirect, request
 from bottle import jinja2_template as template
@@ -7,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 import config
 import service
-from models import engine
+from models import engine, ItemEncoder
 
 Session = sessionmaker(bind=engine)
 
@@ -61,7 +62,7 @@ def create_item():
         desc = request.forms.get('description')
         desc = None if not desc else desc
 
-        item = service.create_item(session, upload.file, upload.rawfilename, desc)
+        item = service.create_item(session, upload.file, upload.raw_filename, desc)
 
         savepath = '%s/%s' % (config.FILE_ROOT, item.cat)
         if not os.path.exists(savepath):
@@ -69,7 +70,8 @@ def create_item():
         upload.filename = item.hashname
         upload.save(savepath)
 
-        return item.id
+        session.commit()
+        return json.dumps(item, cls=ItemEncoder)
     except:
         session.rollback()
         raise
