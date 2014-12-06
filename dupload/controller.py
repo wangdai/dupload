@@ -58,7 +58,7 @@ def create_item():
 
         item = service.create_item(session, upload.file, upload.raw_filename, desc)
 
-        savepath = '%s/%s' % (config.FILE_ROOT, item.cat)
+        savepath = '%s/%s' % (config.STATIC_PATH, item.cat)
         if not os.path.exists(savepath):
             os.mkdir(savepath)
         upload.filename = item.hashname
