@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 import config
 import service
-from models import engine, ItemEncoder
+from models import engine, Item, ItemEncoder
 
 Session = sessionmaker(bind=engine)
 
