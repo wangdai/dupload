@@ -58,7 +58,7 @@ def create_item():
 
         item = service.create_item(session, upload.file, upload.raw_filename, desc)
 
-        savepath = '%s/%s' % (config.FILE_ROOT, item.cat)
+        savepath = '%s/%s' % (config.STATIC_PATH, item.cat)
         if not os.path.exists(savepath):
             os.mkdir(savepath)
         upload.filename = item.hashname
@@ -79,7 +79,7 @@ def delete_item(id):
     try:
         id = int(id)
         item = session.query(Item).filter_by(id=id).first()
-        path = '%s/%s/%s' % (FILE_ROOT, item.cat, item.hashname)
+        path = '%s/%s/%s' % (config.STATIC_PATH, item.cat, item.hashname)
         os.remove(path)
         session.delete(item)
         session.commit()

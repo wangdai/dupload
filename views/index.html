@@ -36,7 +36,7 @@
   <tbody>
   {% for item in items -%}
     <tr>
-      <td><a href="/static/dupload/{{ item.cat }}/{{ item.hashname }}">
+      <td><a href="/static/{{ item.cat }}/{{ item.hashname }}">
       {{ item.name }}</a></td>
       <td>{{ item.size }}</td>
       <td>{{ item.created }}</td>
@@ -57,9 +57,7 @@
   <a href="?p={{ p+1 }}">next</a>
 </div>
 
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script>
-
 var xhr = new XMLHttpRequest();
 xhr.onprogress = function(p) {
     console.log("onprogress", p.loaded);

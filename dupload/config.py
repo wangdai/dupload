@@ -1,10 +1,8 @@
-HASH_SIZE = 8192
+HASH_SIZE = 8192 * 1024
 
-DB_NAME = 'dupload.db'
+DB_NAME = '../items.db'
 
-STATIC_PATH = '/home/wangdai/static'
-
-FILE_ROOT = STATIC_PATH + '/dupload'
+STATIC_PATH = '../static'
 
 CATEGORY = {
     'imgs': ('.jpg', '.png', '.gif', '.svg'),
