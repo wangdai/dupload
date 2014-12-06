@@ -7,10 +7,10 @@ STATIC_PATH = '/home/wangdai/static'
 FILE_ROOT = STATIC_PATH + '/dupload'
 
 CATEGORY = {
-    'imgs': ('.jpg', '.png', '.gif'),
+    'imgs': ('.jpg', '.png', '.gif', '.svg'),
     'doc': ('.txt', '.pdf', '.doc', '.docx', '.xml', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.tsv', '.md'),
-    'music': ('.mp3',),
-    'pack': ('.zip', '.gz', '.bz2', '.tar', '.7z', '.tgz', '.xz')
+    'music': ('.mp3', '.aac', '.flac'),
+    'pack': ('.zip', '.tar', 'tar.bz2', '.tar.gz', '.7z', '.tgz', '.tar.xz', '.rar')
 }
 
 CAT_KEYS = CATEGORY.keys()

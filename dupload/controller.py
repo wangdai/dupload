@@ -4,6 +4,7 @@ import os
 
 from bottle import route, redirect, request
 from bottle import jinja2_template as template
+from bottle import jinja2_view as view
 from sqlalchemy.orm import sessionmaker
 
 import config
@@ -12,28 +13,21 @@ from models import engine, ItemEncoder
 
 Session = sessionmaker(bind=engine)
 
-@route('/test/<category>', method='GET')
-def test(category):
-    if category is 'all':
-        print('yes')
-    else:
-        print('no')
-        print(category.encode())
-
-
-@route('/static/<path:path>', method='GET')
-def static(path):
-    return static_file(path, root=STATIC_PATH)
+# @route('/static/<path:path>', method='GET')
+# def static(path):
+#     return static_file(path, root=STATIC_PATH)
 
 @route('/', method='GET')
 def index():
     redirect('/items')
 
 @route('/items', method='GET')
+@view('index')
 def get_items():
     session = Session()
     # current page
     p = request.query.p or 1
+    p = int(p)
     offset = (p - 1) * config.PAGE_SIZE
     # category
     cat = request.query.cat

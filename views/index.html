@@ -13,55 +13,80 @@
   <input type="submit" value="upload" />
 </form>
 
-<h3>items</h3>
+<h3>items
 
-<select>
+<select id="cats">
   <option>all</option>
   {% for cat in cats %}
     <option {% if cat == tab %}selected{% endif %}>{{ cat }}</option>
   {% endfor %}
 </select>
 
+</h3>
 <table id="items">
   <thead>
     <tr>
       <th>name</th>
-      <th>file size</th>
-      <th>upload date</th>
+      <th>size</th>
+      <th>created</th>
+      <th>last modified</th>
       <th>description</th>
     </tr>
   </thead>
   <tbody>
+  {% for item in items -%}
+    <tr>
+      <td><a href="/static/dupload/{{ item.cat }}/{{ item.hashname }}">
+      {{ item.name }}</a></td>
+      <td>{{ item.size }}</td>
+      <td>{{ item.created }}</td>
+      <td>{{ item.lastmodified }}</td>
+      <td>{{ item.description }}</td>
+    </tr>
+  {% endfor -%}
   </tbody>
 </table>
 
-<ul class="pagination">
-
-</ul>
+<div class="pagination">
+  <a href="?p={{ p-1 }}">prev</a>
+  <select>
+  {% for i in range(1, tp+1) %}
+    <option {% if i == p %}selected{% endif %}>{{ i }}</option>
+  {% endfor %}
+  </select>
+  <a href="?p={{ p+1 }}">next</a>
+</div>
 
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script>
-/*
+
 var xhr = new XMLHttpRequest();
 xhr.onprogress = function(p) {
     console.log("onprogress", p.loaded);
 }
-$("#uform").submit(function(e) {
+xhr.onreadystatechange=function() {
+    console.log("xhr status", xhr.readyState, xhr.status);
+    if (xhr.readyState==4 && xhr.status==200) {
+        window.location.href = "/items";
+    }
+}
+
+var uform = document.getElementById("uform");
+uform.onsubmit = function(e) {
     e.preventDefault();
-    var fileList = $(this).children("[name='upload']")[0].files;
-    if (fileList.length <= 0) {
-        return;
-    }
-    
-    if (file.size > 8192) {
-        alert("file too large: " + file.size);
-        return;
-    }
-    
-    var formData = new FormData($(this)[0]);
+    var formData = new FormData(uform);
     xhr.open("POST", "/items");
     xhr.send(formData);
-});
-*/
+}
+
+var cats = document.getElementById("cats");
+cats.onchange = function() {
+    var cat = cats.selectedOptions[0].value;
+    if (cat == "all") {
+        window.location.href = "/items";
+    } else {
+        window.location.href = "?cat=" + cat;
+    }
+}
 </script>
 {% endblock %}
