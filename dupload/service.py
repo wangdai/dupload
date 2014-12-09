@@ -1,4 +1,4 @@
-import hashlib
+
 
 from sqlalchemy import desc
 
@@ -24,18 +24,13 @@ def get_items_count(session, cat=None):
 
 def create_item(session, file, name, desc):
     root, ext = utils.splitext(name)
-    # TODO handle cat is None
     cat = utils.judgecat(ext)
-    # TODO check file is None
-    # check file size
-    file.seek(0)
-    fb_arr = file.read(config.HASH_SIZE)
-    file.seek(0)
-    size = len(fb_arr)
-    hashvalue = hashlib.md5(fb_arr).hexdigest()
+    # TODO check file size
+    size = utils.filesize(file)
+    hashvalue = utils.filemd5(file)
     if exists(session, hashvalue):
-        # TODO
-        pass
+        # TODO refine exception
+        raise Exception(name + " already exists")
     hashname = hashvalue + ext
     item = Item(name, hashname, size, cat, desc)
     session.add(item)

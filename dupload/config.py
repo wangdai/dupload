@@ -8,7 +8,8 @@ CATEGORY = {
     'imgs': ('.jpg', '.png', '.gif', '.svg'),
     'doc': ('.txt', '.pdf', '.doc', '.docx', '.xml', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.tsv', '.md'),
     'music': ('.mp3', '.aac', '.flac'),
-    'pack': ('.zip', '.tar', 'tar.bz2', '.tar.gz', '.7z', '.tgz', '.tar.xz', '.rar')
+    'pack': ('.zip', '.tar', 'tar.bz2', '.tar.gz', '.7z', '.tgz', '.tar.xz', '.rar'),
+    'other': ()
 }
 
 CAT_KEYS = CATEGORY.keys()

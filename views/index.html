@@ -9,6 +9,7 @@
 
 <form id="uform" method="post" action="/items" enctype="multipart/form-data">
   <input type="file" name="upload" value="browse" />
+  <input type="text" name="size" hidden />
   <input type="text" name="description" />
   <input type="submit" value="upload" />
 </form>
@@ -16,7 +17,7 @@
 <h3>items
 
 <select id="cats">
-  <option>all</option>
+  <option {% if not cat %}selected{% endif %}>all</option>
   {% for cat in cats %}
     <option {% if cat == tab %}selected{% endif %}>{{ cat }}</option>
   {% endfor %}
@@ -59,7 +60,7 @@
 
 <script>
 var xhr = new XMLHttpRequest();
-xhr.onprogress = function(p) {
+xhr.upload.onprogress = function(p) {
     console.log("onprogress", p.loaded);
 }
 xhr.onreadystatechange=function() {
@@ -72,9 +73,27 @@ xhr.onreadystatechange=function() {
 var uform = document.getElementById("uform");
 uform.onsubmit = function(e) {
     e.preventDefault();
+    if (ufile.files.length == 0 || ufile.files.length > 1) {
+        return;
+    }
     var formData = new FormData(uform);
     xhr.open("POST", "/items");
     xhr.send(formData);
+}
+
+var ufile = uform["upload"];
+var usize = uform["size"];
+ufile.onchange = function() {
+    if (this.files.length == 0) {
+        return;
+    }
+    var file = this.files[0];
+    if (file.size > 8192 * 1024) {
+        alert("file too large (expecting <= 8Mb)");
+        this.value = null;
+        return;
+    }
+    usize.value = file.size;
 }
 
 var cats = document.getElementById("cats");

@@ -17,6 +17,10 @@ Session = sessionmaker(bind=engine)
 # def static(path):
 #     return static_file(path, root=STATIC_PATH)
 
+# @route('/test')
+# def test():
+#     return request.query.size;
+
 @route('/', method='GET')
 def index():
     redirect('/items')
