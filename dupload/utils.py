@@ -24,7 +24,7 @@ def filesize(f):
 
 def filemd5(f):
     oldpos = f.tell()
-    fb_arr = file.read(config.HASH_SIZE)
+    fb_arr = f.read(config.HASH_SIZE)
     f.seek(oldpos)
     return hashlib.md5(fb_arr).hexdigest()
 

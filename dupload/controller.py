@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 
-from bottle import route, redirect, request
+from bottle import route, redirect, request, static_file
 from bottle import jinja2_template as template
 from bottle import jinja2_view as view
 from sqlalchemy.orm import sessionmaker
@@ -12,14 +12,6 @@ import service
 from models import engine, Item, ItemEncoder
 
 Session = sessionmaker(bind=engine)
-
-# @route('/static/<path:path>', method='GET')
-# def static(path):
-#     return static_file(path, root=STATIC_PATH)
-
-# @route('/test')
-# def test():
-#     return request.query.size;
 
 @route('/', method='GET')
 def index():
@@ -65,6 +57,7 @@ def create_item():
         savepath = '%s/%s' % (config.STATIC_PATH, item.cat)
         if not os.path.exists(savepath):
             os.mkdir(savepath)
+        upload.file.seek(0)
         upload.filename = item.hashname
         upload.save(savepath)
 
@@ -92,4 +85,17 @@ def delete_item(id):
         raise
     finally:
         session.close()
+
+@route('/static/<path:path>', method='GET')
+def static(path):
+    return static_file(path, root=config.STATIC_PATH)
+
+@route('/download/<path:path>', method='GET')
+def static(path):
+    f = request.query.f
+    return static_file(path, root=config.STATIC_PATH, download=f)
+
+# @route('/test')
+# def test():
+#     return request.query.size;
 

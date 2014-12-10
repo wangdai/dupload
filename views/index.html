@@ -8,10 +8,12 @@
 <h2>dupload</h2>
 
 <form id="uform" method="post" action="/items" enctype="multipart/form-data">
-  <input type="file" name="upload" value="browse" />
-  <input type="text" name="size" hidden />
-  <input type="text" name="description" />
+  <input type="file" name="upload" value="browse" /><br>
+  <input type="text" name="size" hidden /><br>
+  <input type="text" name="description" /><br>
   <input type="submit" value="upload" />
+  <span id="progress"></span>
+  <a id="cancel" href="" hidden>cancel</a>
 </form>
 
 <h3>items
@@ -59,9 +61,22 @@
 </div>
 
 <script>
+var cancelLink = document.getElementById("cancel");
+cancelLink.onclick = function(e) {
+    e.preventDefault();
+    xhr.abort();
+    progress.innerText = "";
+    this.hidden = true;
+}
+
+var progress = document.getElementById("progress");
 var xhr = new XMLHttpRequest();
-xhr.upload.onprogress = function(p) {
-    console.log("onprogress", p.loaded);
+xhr.upload.onloadstart = function() {
+    cancelLink.hidden = false;
+}
+xhr.upload.onprogress = function(event) {
+    console.log("onprogress", event.loaded);
+    progress.innerText = event.loaded / event.total * 100 + "%";
 }
 xhr.onreadystatechange=function() {
     console.log("xhr status", xhr.readyState, xhr.status);
