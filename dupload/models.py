@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 from datetime import datetime
 
 from sqlalchemy import Column, func, create_engine
@@ -49,7 +50,7 @@ class ItemEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
         return json.JSONEncoder.default(self, obj)
-        
+
 engine = create_engine('sqlite:///%s' % config.DB_NAME, echo=config.DEBUG)
 Base.metadata.create_all(engine)
 

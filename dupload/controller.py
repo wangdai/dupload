@@ -18,7 +18,6 @@ def index():
     redirect('/items')
 
 @route('/items', method='GET')
-@view('index')
 def get_items():
     session = Session()
     # current page
@@ -33,6 +32,7 @@ def get_items():
     tp = rows // config.PAGE_SIZE
     if rows % config.PAGE_SIZE != 0:
         tp += 1
+    tp = 1 if tp <= 0 else tp
     # q = request.query.q
     param = dict()
     param['p'] = p
@@ -50,9 +50,10 @@ def create_item():
     try:
         upload = request.files.get('upload')
         desc = request.forms.get('description')
-        desc = None if not desc else desc
+        size = request.forms.get('size')
+        size = None if not size else int(size)
 
-        item = service.create_item(session, upload.file, upload.raw_filename, desc)
+        item = service.create_item(session, upload.file, upload.raw_filename, size, desc)
 
         savepath = '%s/%s' % (config.STATIC_PATH, item.cat)
         if not os.path.exists(savepath):

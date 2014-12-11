@@ -38,7 +38,7 @@
   </thead>
   <tbody>
   {% for item in items -%}
-    <tr>
+    <tr itemid={{ item.id }}>
       <td><a href="/static/{{ item.cat }}/{{ item.hashname }}">
       {{ item.name }}</a></td>
       <td>{{ item.size }}</td>
@@ -61,43 +61,45 @@
 </div>
 
 <script>
-var cancelLink = document.getElementById("cancel");
-cancelLink.onclick = function(e) {
+var xhr = new XMLHttpRequest();
+var uform = document.getElementById("uform");
+var ufile = uform["upload"];
+var usize = uform["size"];
+var progress = document.getElementById("progress");
+var cancel = document.getElementById("cancel");
+
+cancel.onclick = function(e) {
     e.preventDefault();
     xhr.abort();
     progress.innerText = "";
     this.hidden = true;
+    ufile = null;
 }
 
-var progress = document.getElementById("progress");
-var xhr = new XMLHttpRequest();
 xhr.upload.onloadstart = function() {
-    cancelLink.hidden = false;
+    cancel.hidden = false;
 }
 xhr.upload.onprogress = function(event) {
-    console.log("onprogress", event.loaded);
     progress.innerText = event.loaded / event.total * 100 + "%";
 }
-xhr.onreadystatechange=function() {
-    console.log("xhr status", xhr.readyState, xhr.status);
-    if (xhr.readyState==4 && xhr.status==200) {
+xhr.onreadystatechange = function() {
+    if (this.readyState==4 && this.status==200) {
         window.location.href = "/items";
+    } else if (this.status >= 400) {
+        alert("something is wrong " + this.status);
     }
 }
 
-var uform = document.getElementById("uform");
 uform.onsubmit = function(e) {
     e.preventDefault();
     if (ufile.files.length == 0 || ufile.files.length > 1) {
         return;
     }
-    var formData = new FormData(uform);
-    xhr.open("POST", "/items");
+    var formData = new FormData(this);
+    xhr.open(this.method, this.action);
     xhr.send(formData);
 }
 
-var ufile = uform["upload"];
-var usize = uform["size"];
 ufile.onchange = function() {
     if (this.files.length == 0) {
         return;

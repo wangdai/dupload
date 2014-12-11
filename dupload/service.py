@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import desc
 
 import config
@@ -22,11 +20,12 @@ def get_items_count(session, cat=None):
     else:
         return session.query(Item).filter_by(cat=cat).count()
 
-def create_item(session, file, name, desc):
+def create_item(session, file, name, size, desc):
     root, ext = utils.splitext(name)
     cat = utils.judgecat(ext)
-    # TODO check file size
-    size = utils.filesize(file)
+    if size != utils.filesize(file):
+        # TODO refine exception
+        raise Exception("file size isn't consistent")
     hashvalue = utils.filemd5(file)
     if exists(session, hashvalue):
         # TODO refine exception
