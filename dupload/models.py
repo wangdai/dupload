@@ -1,13 +1,12 @@
 import json
 import os
-import logging
 from datetime import datetime
 
 from sqlalchemy import Column, func, create_engine
 from sqlalchemy.types import Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-import config
+from .config import DB_NAME
 
 
 Base = declarative_base()
@@ -51,6 +50,6 @@ class ItemEncoder(json.JSONEncoder):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
         return json.JSONEncoder.default(self, obj)
 
-engine = create_engine('sqlite:///%s' % config.DB_NAME, echo=config.DEBUG)
+engine = create_engine('sqlite:///%s' % DB_NAME, echo=True)
 Base.metadata.create_all(engine)
 

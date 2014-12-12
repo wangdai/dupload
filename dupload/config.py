@@ -1,8 +1,8 @@
 HASH_SIZE = 8192 * 1024
 
-DB_NAME = '../items.db'
+DB_NAME = 'items.db'
 
-STATIC_PATH = '../static'
+STATIC_PATH = 'static'
 
 CATEGORY = {
     'imgs': ('.jpg', '.png', '.gif', '.svg'),
@@ -16,5 +16,9 @@ CAT_KEYS = CATEGORY.keys()
 
 PAGE_SIZE = 10
 
-DEBUG = True
+OBS_ENC = {
+    'str': 'oB5eXs0HnZW2AlvjwcSQTpzGIVtCExuRPgUJiDyfMkNr8d19bh34qaYLFKOm67',
+    'offset': 241771,
+    'pace': 241771
+}
 

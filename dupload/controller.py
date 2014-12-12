@@ -2,14 +2,15 @@ import hashlib
 import json
 import os
 
+import bottle
 from bottle import route, redirect, request, static_file
 from bottle import jinja2_template as template
 from bottle import jinja2_view as view
 from sqlalchemy.orm import sessionmaker
 
-import config
-import service
-from models import engine, Item, ItemEncoder
+from .config import PAGE_SIZE, CAT_KEYS, STATIC_PATH
+from .service import get_items_count, get_items, create_item
+from .models import engine, Item, ItemEncoder
 
 Session = sessionmaker(bind=engine)
 
@@ -18,34 +19,34 @@ def index():
     redirect('/items')
 
 @route('/items', method='GET')
-def get_items():
+def items_get():
     session = Session()
     # current page
     p = request.query.p or 1
     p = int(p)
-    offset = (p - 1) * config.PAGE_SIZE
+    offset = (p - 1) * PAGE_SIZE
     # category
     cat = request.query.cat
-    cat = None if cat not in config.CAT_KEYS else cat
-    rows = service.get_items_count(session, cat)
+    cat = None if cat not in CAT_KEYS else cat
+    rows = get_items_count(session, cat)
     # total pages
-    tp = rows // config.PAGE_SIZE
-    if rows % config.PAGE_SIZE != 0:
+    tp = rows // PAGE_SIZE
+    if rows % PAGE_SIZE != 0:
         tp += 1
     tp = 1 if tp <= 0 else tp
     # q = request.query.q
     param = dict()
     param['p'] = p
     param['tab'] = cat
-    param['cats'] = sorted(config.CAT_KEYS)
+    param['cats'] = sorted(CAT_KEYS)
     param['r'] = rows
     param['tp'] = tp
-    param['items'] = service.get_items(session, offset, config.PAGE_SIZE, cat)
+    param['items'] = get_items(session, offset, PAGE_SIZE, cat)
     session.close()
     return template('index', param)
 
 @route('/items', method='POST')
-def create_item():
+def items_post():
     session = Session()
     try:
         upload = request.files.get('upload')
@@ -53,9 +54,9 @@ def create_item():
         size = request.forms.get('size')
         size = None if not size else int(size)
 
-        item = service.create_item(session, upload.file, upload.raw_filename, size, desc)
+        item = create_item(session, upload.file, upload.raw_filename, size, desc)
 
-        savepath = '%s/%s' % (config.STATIC_PATH, item.cat)
+        savepath = '%s/%s' % (STATIC_PATH, item.cat)
         if not os.path.exists(savepath):
             os.mkdir(savepath)
         upload.file.seek(0)
@@ -72,12 +73,12 @@ def create_item():
 
 
 @route('/items/<id>', method='DELETE')
-def delete_item(id):
+def items_delete(id):
     session = Session()
     try:
         id = int(id)
         item = session.query(Item).filter_by(id=id).first()
-        path = '%s/%s/%s' % (config.STATIC_PATH, item.cat, item.hashname)
+        path = '%s/%s/%s' % (STATIC_PATH, item.cat, item.hashname)
         os.remove(path)
         session.delete(item)
         session.commit()
@@ -89,14 +90,20 @@ def delete_item(id):
 
 @route('/static/<path:path>', method='GET')
 def static(path):
-    return static_file(path, root=config.STATIC_PATH)
+    return static_file(path, root=STATIC_PATH)
 
 @route('/download/<path:path>', method='GET')
-def static(path):
+def download(path):
     f = request.query.f
-    return static_file(path, root=config.STATIC_PATH, download=f)
+    return static_file(path, root=STATIC_PATH, download=f)
 
 # @route('/test')
 # def test():
 #     return request.query.size;
+
+bottle.debug(True)
+app = bottle.default_app()
+
+#if __name__ == '__main__':
+#    bottle.run(host='localhost', port=8000, debug=True, reloader=True)
 
